@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,9 +15,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -31,7 +30,6 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     ListView listViewCourse;
     List<Course> caList;
     private ProgressDialog pDialog;
+    private static String GET_URL = "https://bait2073.000webhostapp.com/select_course.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }else if (id == R.id.action_refresh){
-            downloadCourse(getApplicationContext(), "http://bait2073.rf.gd/select_course.php");
+            downloadCourse(getApplicationContext(), GET_URL);
         }
 
         return super.onOptionsItemSelected(item);
