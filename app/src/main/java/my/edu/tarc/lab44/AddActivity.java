@@ -2,9 +2,7 @@ package my.edu.tarc.lab44;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.util.JsonReader;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -17,15 +15,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class AddActivity extends AppCompatActivity {
