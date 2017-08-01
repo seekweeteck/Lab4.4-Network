@@ -2,7 +2,9 @@ package my.edu.tarc.lab44;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.JsonReader;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -15,7 +17,15 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AddActivity extends AppCompatActivity {
@@ -27,16 +37,11 @@ public class AddActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add);
 
         editTextCode = (EditText) findViewById(R.id.editTextCode);
-        editTextTitle = (EditText) findViewById(R.id.editTextCode);
-        editTextCredit= (EditText) findViewById(R.id.editTextCode);
+        editTextTitle = (EditText) findViewById(R.id.editTextTitle);
+        editTextCredit= (EditText) findViewById(R.id.editTextCredit);
     }
 
     public void saveRecord(View v) {
-        EditText editTextCode, editTextTitle, editTextCredit;
-
-        editTextCode = (EditText) findViewById(R.id.editTextCode);
-        editTextTitle = (EditText) findViewById(R.id.editTextTitle);
-        editTextCredit = (EditText) findViewById(R.id.editTextCredit);
         Course course = new Course();
 
         course.setCode(editTextCode.getText().toString());
@@ -51,6 +56,13 @@ public class AddActivity extends AppCompatActivity {
         }
     }
 
+    public void reset(View v){
+        editTextCode.setText("");
+        editTextTitle.setText("");
+        editTextCredit.setText("");
+        editTextCode.requestFocus();
+    }
+
     public void makeServiceCall(Context context, String url, final Course course) {
         //mPostCommentResponse.requestStarted();
         RequestQueue queue = Volley.newRequestQueue(context);
@@ -63,8 +75,20 @@ public class AddActivity extends AppCompatActivity {
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
-                            Toast.makeText(getApplicationContext(), "Record saved. " + response, Toast.LENGTH_LONG).show();
-                            finish();
+                            JSONObject jsonObject;
+                            try {
+                                jsonObject = new JSONObject(response);
+                                int success = jsonObject.getInt("success");
+                                String message = jsonObject.getString("message");
+                                if (success==0) {
+                                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                                }else{
+                                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                                    finish();
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     },
                     new Response.ErrorListener() {

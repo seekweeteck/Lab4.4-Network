@@ -34,11 +34,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int PERMISSION_REQUEST_CODE = 100;
+    public static final String TAG = "my.edu.tarc.lab44";
     ListView listViewCourse;
     List<Course> caList;
     private ProgressDialog pDialog;
     private static String GET_URL = "https://bait2073.000webhostapp.com/select_course.php";
+    RequestQueue queue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         pDialog = new ProgressDialog(this);
         caList = new ArrayList<>();
 
-        if(!isConnected()){
+        if (!isConnected()) {
             Toast.makeText(getApplicationContext(), "No network", Toast.LENGTH_LONG).show();
         }
 
@@ -66,32 +67,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isConnected() {
-        // Check availability of network connection.
-        if(!checkPermission()){
-            requestPermission();
-        }else{
-            ConnectivityManager cm =
-                    (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm =
+                (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
 
-            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-            return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-        }
-       return false;
-    }
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
-    private boolean checkPermission() {
-        int result = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_NETWORK_STATE);
-        return result == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestPermission() {
-
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_NETWORK_STATE)) {
-
-        } else {
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, PERMISSION_REQUEST_CODE);
-        }
     }
 
     @Override
@@ -111,33 +92,17 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
-        }else if (id == R.id.action_refresh){
+        } else if (id == R.id.action_refresh) {
             downloadCourse(getApplicationContext(), GET_URL);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == PERMISSION_REQUEST_CODE){
-            View v = findViewById(R.id.main);
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Snackbar bar = Snackbar.make(v, "Network access granted", Snackbar.LENGTH_LONG);
-                bar.show();
-
-            } else {
-
-                Snackbar bar = Snackbar.make(v, "Network access  denied, unable to retrieve records", Snackbar.LENGTH_LONG);
-                bar.show();
-            }
-        }
-    }
-
     private void downloadCourse(Context context, String url) {
+        // Instantiate the RequestQueue
+        queue = Volley.newRequestQueue(context);
 
-        RequestQueue queue = Volley.newRequestQueue(context);
         if (!pDialog.isShowing())
             pDialog.setMessage("Syn with server...");
         pDialog.show();
@@ -147,9 +112,9 @@ public class MainActivity extends AppCompatActivity {
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        try{
+                        try {
                             caList.clear();
-                            for(int i=0; i < response.length();i++){
+                            for (int i = 0; i < response.length(); i++) {
                                 JSONObject courseResponse = (JSONObject) response.get(i);
                                 String code = courseResponse.getString("code");
                                 String title = courseResponse.getString("title");
@@ -160,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                             loadCourse();
                             if (pDialog.isShowing())
                                 pDialog.dismiss();
-                        }catch (Exception e){
+                        } catch (Exception e) {
                             Toast.makeText(getApplicationContext(), "Error:" + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     }
@@ -173,6 +138,11 @@ public class MainActivity extends AppCompatActivity {
                             pDialog.dismiss();
                     }
                 });
+
+        // Set the tag on the request.
+        jsonObjectRequest.setTag(TAG);
+
+        // Add the request to the RequestQueue.
         queue.add(jsonObjectRequest);
     }
 
@@ -180,5 +150,13 @@ public class MainActivity extends AppCompatActivity {
         final CourseAdapter adapter = new CourseAdapter(this, R.layout.content_main, caList);
         listViewCourse.setAdapter(adapter);
         Toast.makeText(getApplicationContext(), "Count :" + caList.size(), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (queue != null) {
+            queue.cancelAll(TAG);
+        }
     }
 }
