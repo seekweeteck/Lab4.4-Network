@@ -43,7 +43,7 @@ public class AddActivity extends AppCompatActivity {
 
         try {
             //TODO: Please update the URL to point to your own server
-            makeServiceCall(this, "YOUR SERVER URL HERE", course);
+            makeServiceCall(this, "YOUR SERVER URL HERE/insert_course.php", course);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
