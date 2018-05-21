@@ -42,7 +42,8 @@ public class AddActivity extends AppCompatActivity {
         course.setCredit(editTextCredit.getText().toString());
 
         try {
-            makeServiceCall(this, "https://bait2073.000webhostapp.com/insert_course.php", course);
+            //TODO: Please update the URL to point to your own server
+            makeServiceCall(this, "YOUR SERVER URL HERE", course);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
