@@ -32,7 +32,8 @@ public class MainActivity extends AppCompatActivity {
     ListView listViewCourse;
     List<Course> caList;
     private ProgressDialog pDialog;
-    private static String GET_URL = "https://bait2073.000webhostapp.com/select_course.php";
+    //TODO: Please update the URL to point to your own server
+    private static String GET_URL = "YOUR SERVER URL HERE/select_course.php";
     RequestQueue queue;
 
     @Override
