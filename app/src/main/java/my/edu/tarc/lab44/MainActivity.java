@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
@@ -33,7 +34,8 @@ public class MainActivity extends AppCompatActivity {
     List<Course> caList;
     private ProgressDialog pDialog;
     //TODO: Please update the URL to point to your own server
-    private static String GET_URL = "YOUR SERVER URL HERE/select_course.php";
+    private static String GET_URL = "https://bait2073.000webhostapp.com/select_course.php";
+    private static String SEARCH_URL = "https://bait2073.000webhostapp.com/search_course.php";
     RequestQueue queue;
 
     @Override
@@ -59,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
     }
 
     private boolean isConnected() {
@@ -74,6 +77,24 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchView searchView = (SearchView) menu.findItem(R.id.app_bar_search).getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                searchCourse(getApplicationContext(), s);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
+
+
         return true;
     }
 
@@ -144,7 +165,60 @@ public class MainActivity extends AppCompatActivity {
     private void loadCourse() {
         final CourseAdapter adapter = new CourseAdapter(this, R.layout.content_main, caList);
         listViewCourse.setAdapter(adapter);
-        Toast.makeText(getApplicationContext(), "Count :" + caList.size(), Toast.LENGTH_LONG).show();
+        if(caList != null){
+            int size = caList.size();
+            if(size > 0)
+                Toast.makeText(getApplicationContext(), "No. of record : " + size + ".", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(getApplicationContext(), "No record found.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void searchCourse(Context context, String code) {
+        queue = Volley.newRequestQueue(context);
+        String url = SEARCH_URL + "?code=" + code;
+
+        if (!pDialog.isShowing())
+            pDialog.setMessage("Searching...");
+        pDialog.show();
+
+        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(
+                url,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        try {
+                            caList.clear();
+                            for (int i = 0; i < response.length(); i++) {
+                                JSONObject courseResponse = (JSONObject) response.get(i);
+                                String code = courseResponse.getString("code");
+                                String title = courseResponse.getString("title");
+                                String credit = courseResponse.getString("credit");
+                                Course course = new Course(code, title, credit);
+                                caList.add(course);
+                            }
+                            loadCourse();
+                            if (pDialog.isShowing())
+                                pDialog.dismiss();
+                        } catch (Exception e) {
+                            Toast.makeText(getApplicationContext(), "Error:" + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        Toast.makeText(getApplicationContext(), "Error" + volleyError.getMessage(), Toast.LENGTH_LONG).show();
+                        if (pDialog.isShowing())
+                            pDialog.dismiss();
+                    }
+                });
+
+        // Set the tag on the request.
+        jsonObjectRequest.setTag(TAG);
+
+        // Add the request to the RequestQueue.
+        queue.add(jsonObjectRequest);
     }
 
     @Override
